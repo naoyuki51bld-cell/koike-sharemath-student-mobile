@@ -6,7 +6,7 @@
     <title>生徒用スマホ版：手書き＆みんなの意見</title>
     <style>
         /* -------------------------------------
-           全体レイアウト（スマホ横画面用）
+           全体レイアウト（スマホ専用）
         ------------------------------------- */
         body, html { 
             margin: 0; padding: 0; 
@@ -19,7 +19,7 @@
         }
 
         /* -------------------------------------
-           左側：収納可能なツールメニュー
+           左側：収納＆上下スクロール可能なメニュー
         ------------------------------------- */
         .sidebar {
             position: absolute;
@@ -29,10 +29,21 @@
             background: rgba(255, 255, 255, 0.95);
             box-shadow: 2px 0 10px rgba(0,0,0,0.15);
             display: flex; flex-direction: column;
-            padding: 8px 5px; gap: 6px; box-sizing: border-box;
+            padding: 8px 5px 20px 5px; /* 下部まできっちり見えるように余白を追加 */
+            gap: 6px; box-sizing: border-box;
             z-index: 20;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* ★追加：メニューの上下スクロールを許可する設定 */
+            overflow-y: auto; 
+            touch-action: pan-y; /* 指での縦スクロールを許可 */
+            -webkit-overflow-scrolling: touch; /* iOSで滑らかにスクロールさせる */
         }
+
+        /* スクロールバーを見えにくくする（デザインの邪魔をしないため） */
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+
         /* メニューを隠す時のクラス */
         .sidebar.closed {
             transform: translateX(-100%);
@@ -40,8 +51,8 @@
 
         /* 収納・展開用のつまみ（ハンドル） */
         .toggle-handle {
-            position: absolute;
-            right: -30px; 
+            position: fixed; /* スクロールしてもつまみは常に同じ位置に固定 */
+            left: 95px; /* メニューの右端に固定 */
             top: 50%;
             transform: translateY(-50%);
             width: 30px; height: 60px;
@@ -51,6 +62,12 @@
             display: flex; justify-content: center; align-items: center;
             font-size: 16px; font-weight: bold; color: #555; cursor: pointer;
             border: 1px solid #ddd; border-left: none;
+            z-index: 21;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* メニューが隠れたらつまみも画面左端に移動する */
+        .sidebar.closed ~ .toggle-handle {
+            left: 0;
         }
 
         .name-input { 
@@ -58,10 +75,11 @@
             padding: 8px 5px; font-size: 13px; text-align: center;
             border: 1px solid #ccc; border-radius: 6px; 
             outline: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            flex-shrink: 0; /* スクロール時に潰れないようにする */
         }
         .name-input:focus { border-color: #4CAF50; }
 
-        .color-palette { display: flex; justify-content: space-around; padding: 5px 0; }
+        .color-palette { display: flex; justify-content: space-around; padding: 5px 0; flex-shrink: 0; }
         .color-btn { 
             width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ddd; 
             cursor: pointer; padding: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
@@ -74,6 +92,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: 0.1s;
             background-color: #fff; border: 1px solid #eee; color: #333;
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+            flex-shrink: 0;
         }
         .btn:active { transform: translateY(2px); box-shadow: none; }
         .btn.active { border: 2px solid #555; background-color: #e0f7fa; color: #006064; }
@@ -83,12 +102,13 @@
             padding: 6px 5px; text-align: center; background-color: #e1bee7; color: #4a148c; 
             font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 3px;
+            flex-shrink: 0;
         }
         .photo-label:active { transform: translateY(2px); }
         #photoInput { display: none; } 
 
-        .send-btn { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; margin-top: 3px; }
-        .switch-btn { background-color: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; display: none; }
+        .send-btn { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; margin-top: 3px; flex-shrink: 0; }
+        .switch-btn { background-color: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; display: none; flex-shrink: 0; }
 
         /* -------------------------------------
            メインキャンバスエリア
@@ -108,11 +128,10 @@
         }
 
         canvas { 
-            background-color: white; 
+            background-color: transparent; /* 背景を透明にして下地のドットを見せる */
             width: 100%; height: 100%; 
             touch-action: none; cursor: crosshair; display: block;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            transform-origin: 0 0; /* ズームの基準点を左上に */
+            transform-origin: 0 0;
         }
 
         /* ズーム倍率の表示 */
@@ -132,7 +151,7 @@
             width: 100vw; height: 100vh;
             padding: 15px; box-sizing: border-box; overflow-y: auto; 
             background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); 
-            z-index: 30; /* 全ての一番上に表示 */
+            z-index: 30;
         }
         
         .gallery-header { 
@@ -158,14 +177,11 @@
         #modal .modal-name { color: white; font-size: 20px; font-weight: bold; margin-top: 15px; }
         #closeModal { margin-top: 15px; padding: 8px 20px; font-size: 14px; cursor: pointer; background: white; border: none; border-radius: 20px; }
         .loading { text-align: center; color: #fff; font-size: 16px; margin-top: 40px; }
-
     </style>
 </head>
 <body>
 
     <div id="sidebar" class="sidebar">
-        <div id="toggleHandle" class="toggle-handle">◀</div>
-
         <input type="text" id="nameInput" class="name-input" placeholder="名前">
         
         <div class="color-palette">
@@ -177,7 +193,7 @@
         <button id="penBtn" class="btn active"><span>🖋</span><span>ペン</span></button>
         <button id="eraserBtn" class="btn"><span>🧽</span><span>消す</span></button>
         
-        <div style="border-top: 1px solid #eee; margin: 3px 0;"></div>
+        <div style="border-top: 1px solid #eee; margin: 3px 0; flex-shrink: 0;"></div>
         
         <button id="undoBtn" class="btn"><span>↩️</span><span>戻る</span></button>
         <button id="clearBtn" class="btn" style="color: #c62828;"><span>🗑</span><span>全消去</span></button>
@@ -186,11 +202,13 @@
         <label for="photoInput" class="photo-label"><span>📷</span><span>写真</span></label>
         <input type="file" id="photoInput" accept="image/*">
 
-        <div style="flex: 1;"></div> 
+        <div style="min-height: 10px; flex-grow: 1; flex-shrink: 0;"></div> 
 
         <button id="sendBtn" class="btn send-btn"><span>🚀</span><span>送信</span></button>
         <button id="goToGalleryBtn" class="btn switch-btn"><span>👀</span><span>みんなの</span></button>
     </div>
+
+    <div id="toggleHandle" class="toggle-handle">◀</div>
 
     <div class="main-area" id="mainArea">
         <div id="zoomIndicator" class="zoom-indicator">100%</div>
@@ -269,9 +287,7 @@
             }
         });
 
-        // ギャラリーを開く時は上から被せるだけ（裏のキャンバスはそのまま）
         goToGalleryBtn.addEventListener('click', () => { gallerySection.style.display = 'block'; });
-        // 戻る時はギャラリーを非表示にするだけ
         document.getElementById('backToDrawBtn').addEventListener('click', () => { gallerySection.style.display = 'none'; });
 
         /* ----------------------------------------------------
@@ -290,7 +306,6 @@
         function resizeCanvas() {
             const tempImg = canvas.toDataURL();
             
-            // 画面いっぱいに広げる
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             
@@ -308,7 +323,6 @@
         }
 
         window.addEventListener('load', resizeCanvas);
-        // 画面の縦横が変わった時だけリサイズする
         window.addEventListener('resize', resizeCanvas); 
 
         function saveHistory() { history.push(canvas.toDataURL()); }
@@ -319,9 +333,7 @@
         let scale = 1;
         let translateX = 0;
         let translateY = 0;
-        
         let touchCount = 0; 
-        
         let initialDistance = 0;
         let initialScale = 1;
         let initialCenter = { x: 0, y: 0 };
@@ -361,7 +373,7 @@
                 
                 if (initialDistance > 0) {
                     scale = initialScale * (currentDistance / initialDistance);
-                    scale = Math.max(0.5, Math.min(scale, 5)); // 0.5倍〜5倍
+                    scale = Math.max(0.5, Math.min(scale, 5)); 
                 }
                 
                 translateX = initialTranslateX + (currentCenter.x - initialCenter.x);
@@ -380,7 +392,7 @@
 
 
         /* ----------------------------------------------------
-           ★ 描画処理（消しゴムバグ修正済み） ★
+           ★ 描画処理 ★
         ---------------------------------------------------- */
         function getPos(event) {
             const rect = canvas.getBoundingClientRect();
@@ -405,7 +417,6 @@
             e.preventDefault(); 
             const pos = getPos(e);
             
-            // 消しゴムもペンも、上書きモード（source-over）で処理する
             ctx.globalCompositeOperation = 'source-over'; 
             ctx.lineCap = 'round'; 
             ctx.lineJoin = 'round'; 
@@ -414,7 +425,6 @@
                 ctx.lineWidth = 3 / scale; 
                 ctx.strokeStyle = currentColor;
             } else {
-                // 消しゴムの場合は、白色のペンとして塗る（背景を透明にしない）
                 ctx.lineWidth = 30 / scale; 
                 ctx.strokeStyle = '#ffffff'; 
             }
