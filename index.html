@@ -11,30 +11,30 @@
         body { 
             margin: 0; padding: 0; 
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif; 
-            display: flex; flex-direction: row; /* 左右に分割 */
+            display: flex; flex-direction: row; 
             height: 100vh; width: 100vw;
-            background: #2c3e50; /* キャンバスの外側（背景） */
+            background: #2c3e50; 
             overflow: hidden;
-            touch-action: none; /* スクロールなどのブラウザ標準ジェスチャーを無効化 */
+            touch-action: none; 
         }
 
         /* -------------------------------------
-           左側：ツールメニュー（サイドバー）
+           左側：ツールメニュー（限界までスリム化）
         ------------------------------------- */
         .sidebar {
-            width: 150px; min-width: 150px;
+            width: 95px; min-width: 95px; /* ★幅を大幅に狭くしました */
             background: rgba(255, 255, 255, 0.95);
             border-right: 1px solid #ddd;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             display: flex; flex-direction: column;
-            padding: 10px; gap: 8px;
-            overflow-y: auto; /* 縦に溢れたらスクロール可能 */
+            padding: 8px 5px; gap: 6px;
+            overflow-y: auto; 
             z-index: 20;
         }
 
         .name-input { 
             width: 100%; box-sizing: border-box;
-            padding: 10px 8px; font-size: 14px; 
+            padding: 8px 5px; font-size: 13px; text-align: center;
             border: 1px solid #ccc; border-radius: 6px; 
             outline: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
         }
@@ -42,53 +42,42 @@
 
         .color-palette { display: flex; justify-content: space-around; padding: 5px 0; }
         .color-btn { 
-            width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ddd; 
+            width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ddd; 
             cursor: pointer; padding: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
         }
         .color-active { border: 3px solid #555 !important; transform: scale(1.1); }
 
         .btn { 
-            padding: 10px; font-size: 14px; font-weight: bold; text-align: left;
-            border-radius: 8px; cursor: pointer; border: none;
+            padding: 8px 5px; font-size: 12px; font-weight: bold; text-align: center;
+            border-radius: 6px; cursor: pointer; border: none;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: 0.1s;
             background-color: #fff; border: 1px solid #eee; color: #333;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
         }
         .btn:active { transform: translateY(2px); box-shadow: none; }
         .btn.active { border: 2px solid #555; background-color: #e0f7fa; color: #006064; }
 
         .photo-label {
-            display: block; padding: 10px; text-align: center;
-            background-color: #e1bee7; color: #4a148c; 
-            font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 5px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+            padding: 8px 5px; text-align: center; background-color: #e1bee7; color: #4a148c; 
+            font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 3px;
         }
         .photo-label:active { transform: translateY(2px); }
         #photoInput { display: none; } 
 
-        .send-btn { 
-            background: linear-gradient(135deg, #4CAF50, #45a049); 
-            color: white; text-align: center; margin-top: 5px; 
-        }
-        .switch-btn { 
-            background-color: #e3f2fd; color: #0d47a1; text-align: center; border: 1px solid #bbdefb;
-            display: none; /* 初期は非表示（先生の許可待ち） */ 
-        }
+        .send-btn { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; margin-top: 3px; }
+        .switch-btn { background-color: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; display: none; }
 
         /* -------------------------------------
            右側：メイン描画＆ギャラリーエリア
         ------------------------------------- */
-        .main-area {
-            flex: 1; position: relative; overflow: hidden;
-        }
+        .main-area { flex: 1; position: relative; overflow: hidden; }
+        .section { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
 
-        .section {
-            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
-        }
-
-        /* 書く画面（ズーム＆移動対応） */
         #drawSection {
             background-image: radial-gradient(#ccc 1px, transparent 1px);
-            background-size: 20px 20px; /* ノートのようなドット方眼背景 */
+            background-size: 20px 20px; 
             background-color: #ecf0f1;
             display: flex; align-items: center; justify-content: center;
         }
@@ -97,11 +86,9 @@
             background-color: white; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
             touch-action: none; cursor: crosshair; 
-            /* JavaScriptでtransform操作を行うため、transitionは設けない（遅延を防ぐ） */
             transform-origin: 0 0;
         }
 
-        /* ズーム状態表示アイコン */
         .zoom-indicator {
             position: absolute; top: 10px; right: 10px;
             background: rgba(0,0,0,0.5); color: white;
@@ -109,24 +96,14 @@
             pointer-events: none; z-index: 10;
         }
 
-        /* ギャラリー画面 */
-        #gallerySection {
-            display: none; padding: 15px; overflow-y: auto;
-            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-        }
-        .gallery-header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: rgba(255, 255, 255, 0.9); padding: 10px 15px; 
-            border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; 
-        }
+        #gallerySection { display: none; padding: 15px; overflow-y: auto; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); }
+        .gallery-header { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.9); padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .gallery-header h2 { margin: 0; font-size: 16px; color: #333; }
-        
         #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
         .student-card { border-radius: 8px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: white; }
         .student-card img { width: 100%; border-radius: 6px; cursor: pointer; border: 1px solid #eee; }
         .card-info { margin-top: 8px; text-align: center; font-weight: bold; font-size: 14px; color: #444; }
         
-        /* 拡大モーダル */
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; flex-direction: column; z-index: 100; }
         #modal img { max-width: 95%; max-height: 80%; background: white; border-radius: 8px; }
         #modal .modal-name { color: white; font-size: 20px; font-weight: bold; margin-top: 15px; }
@@ -138,7 +115,7 @@
 <body>
 
     <div class="sidebar">
-        <input type="text" id="nameInput" class="name-input" placeholder="名前を入力">
+        <input type="text" id="nameInput" class="name-input" placeholder="名前">
         
         <div class="color-palette">
             <button id="colorBlack" class="color-btn color-active" style="background-color: #333;"></button>
@@ -146,40 +123,39 @@
             <button id="colorBlue" class="color-btn" style="background-color: #1e88e5;"></button>
         </div>
         
-        <button id="penBtn" class="btn active">🖋 ペン</button>
-        <button id="eraserBtn" class="btn">🧽 消しゴム</button>
+        <button id="penBtn" class="btn active"><span>🖋</span><span>ペン</span></button>
+        <button id="eraserBtn" class="btn"><span>🧽</span><span>消す</span></button>
         
-        <div style="border-top: 1px solid #eee; margin: 5px 0;"></div>
+        <div style="border-top: 1px solid #eee; margin: 3px 0;"></div>
         
-        <button id="undoBtn" class="btn">↩️ １つ戻る</button>
-        <button id="clearBtn" class="btn" style="color: #c62828;">🗑 全消去</button>
-        <button id="resetViewBtn" class="btn" style="color: #2e7d32;">🔍 ズームリセット</button>
+        <button id="undoBtn" class="btn"><span>↩️</span><span>戻る</span></button>
+        <button id="clearBtn" class="btn" style="color: #c62828;"><span>🗑</span><span>全消去</span></button>
+        <button id="resetViewBtn" class="btn" style="color: #2e7d32;"><span>🔍</span><span>ズーム戻す</span></button>
 
-        <label for="photoInput" class="photo-label">📷 写真を貼る</label>
+        <label for="photoInput" class="photo-label"><span>📷</span><span>写真</span></label>
         <input type="file" id="photoInput" accept="image/*">
 
-        <div style="flex: 1;"></div> <button id="sendBtn" class="btn send-btn">🚀 先生に送信</button>
-        <button id="goToGalleryBtn" class="btn switch-btn">👀 みんなの意見</button>
+        <div style="flex: 1;"></div> 
+
+        <button id="sendBtn" class="btn send-btn"><span>🚀</span><span>送信</span></button>
+        <button id="goToGalleryBtn" class="btn switch-btn"><span>👀</span><span>みんなの</span></button>
     </div>
 
     <div class="main-area">
-        
         <div id="drawSection" class="section">
             <div id="zoomIndicator" class="zoom-indicator">100%</div>
             <div id="canvasWrapper" style="width: 100%; height: 100%; position: relative;">
                 <canvas id="myCanvas"></canvas>
             </div>
         </div>
-
         <div id="gallerySection" class="section">
             <div class="gallery-header">
-                <button id="backToDrawBtn" class="btn switch-btn" style="display:block; width:auto;">⬅️ 戻る</button>
+                <button id="backToDrawBtn" class="btn switch-btn" style="display:block; width:auto; flex-direction: row; padding: 8px;">⬅️ 戻る</button>
                 <h2>みんなの意見</h2>
             </div>
             <div id="loadingMsg" class="loading">読込中...</div>
             <div id="gallery"></div>
         </div>
-
     </div>
 
     <div id="modal">
@@ -192,9 +168,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
-        // ==========================================
-        // Firebase 設定コード
-        // ==========================================
         const firebaseConfig = {
           apiKey: "AIzaSyCVSbYgwZ1GX9Y5xcgXHII7kuz-MuxeWfY",
           authDomain: "share-math1.firebaseapp.com",
@@ -207,9 +180,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        /* ----------------------------------------------------
-           画面切り替え＆先生の閲覧許可コントロール
-        ---------------------------------------------------- */
         const drawSection = document.getElementById('drawSection');
         const gallerySection = document.getElementById('gallerySection');
         const goToGalleryBtn = document.getElementById('goToGalleryBtn');
@@ -217,7 +187,7 @@
         db.collection('settings').doc('general').onSnapshot((doc) => {
             if (doc.exists) {
                 if (doc.data().isGalleryEnabled) {
-                    goToGalleryBtn.style.display = 'block';
+                    goToGalleryBtn.style.display = 'flex';
                 } else {
                     goToGalleryBtn.style.display = 'none';
                     if (gallerySection.style.display === 'block') {
@@ -232,9 +202,6 @@
         goToGalleryBtn.addEventListener('click', () => { drawSection.style.display = 'none'; gallerySection.style.display = 'block'; });
         document.getElementById('backToDrawBtn').addEventListener('click', () => { gallerySection.style.display = 'none'; drawSection.style.display = 'flex'; });
 
-        /* ----------------------------------------------------
-           キャンバスの基本設定
-        ---------------------------------------------------- */
         const canvas = document.getElementById('myCanvas');
         const canvasWrapper = document.getElementById('canvasWrapper');
         const ctx = canvas.getContext('2d');
@@ -245,84 +212,73 @@
         let currentColor = '#333';
         let history = [];
 
-        // キャンバスのサイズはメインエリアのサイズに固定する
-        function initCanvasSize() {
-            if (history.length === 0) {
-                canvas.width = canvasWrapper.clientWidth;
-                canvas.height = canvasWrapper.clientHeight;
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // ★修正点：画面の向きが変わった時などにキャンバスを画面いっぱいにリサイズする
+        function resizeCanvas() {
+            // 現在の絵をバックアップ
+            const tempImg = canvas.toDataURL();
+            
+            // キャンバスサイズを親要素（余白を引いた右側の広さ）にぴったり合わせる
+            canvas.width = canvasWrapper.clientWidth;
+            canvas.height = canvasWrapper.clientHeight;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // バックアップした絵を戻す
+            if (history.length > 0) {
+                const img = new Image();
+                img.src = tempImg;
+                img.onload = () => { ctx.drawImage(img, 0, 0); };
+            } else {
                 saveHistory();
-                
-                // 画面中央に配置するための初期オフセット
-                translateX = 0; translateY = 0; scale = 1;
-                applyTransform();
             }
+            
+            // ズームや移動の位置もリセットする
+            translateX = 0; translateY = 0; scale = 1;
+            applyTransform();
         }
-        window.addEventListener('load', initCanvasSize);
+
+        // ページ読み込み時と、スマホの縦横が変わった時にリサイズを実行する
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
 
         function saveHistory() { history.push(canvas.toDataURL()); }
 
-        /* ----------------------------------------------------
-           ★ ズーム ＆ パン（移動）の処理 ★
-        ---------------------------------------------------- */
-        let scale = 1;
-        let translateX = 0;
-        let translateY = 0;
-        
-        let touchCount = 0; // 現在画面に触れている指の数
-        
-        let initialDistance = 0;
-        let initialScale = 1;
-        let initialCenter = { x: 0, y: 0 };
-        let initialTranslateX = 0;
-        let initialTranslateY = 0;
+        let scale = 1; let translateX = 0; let translateY = 0;
+        let touchCount = 0; 
+        let initialDistance = 0; let initialScale = 1;
+        let initialCenter = { x: 0, y: 0 }; let initialTranslateX = 0; let initialTranslateY = 0;
 
         function applyTransform() {
-            // CSSのtransformを使ってキャンバスの見た目だけを拡大・移動させる
             canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
             zoomIndicator.textContent = Math.round(scale * 100) + '%';
         }
 
-        // 2点間の距離
-        function getDistance(touches) {
-            return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
-        }
-        // 2点間の中心座標
-        function getCenter(touches) {
-            return { x: (touches[0].clientX + touches[1].clientX) / 2, y: (touches[0].clientY + touches[1].clientY) / 2 };
-        }
+        function getDistance(touches) { return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY); }
+        function getCenter(touches) { return { x: (touches[0].clientX + touches[1].clientX) / 2, y: (touches[0].clientY + touches[1].clientY) / 2 }; }
 
-        // ラッパー要素でタッチイベントを監視（2本指での操作）
         canvasWrapper.addEventListener('touchstart', (e) => {
             touchCount = e.touches.length;
             if (touchCount >= 2) {
-                isDrawing = false; // 2本指なら描画を強制キャンセル
+                isDrawing = false; 
                 initialDistance = getDistance(e.touches);
                 initialScale = scale;
                 initialCenter = getCenter(e.touches);
-                initialTranslateX = translateX;
-                initialTranslateY = translateY;
+                initialTranslateX = translateX; initialTranslateY = translateY;
             }
         }, { passive: false });
 
         canvasWrapper.addEventListener('touchmove', (e) => {
             touchCount = e.touches.length;
             if (touchCount >= 2) {
-                e.preventDefault(); // 画面全体のスクロールを防ぐ
+                e.preventDefault(); 
                 const currentDistance = getDistance(e.touches);
                 const currentCenter = getCenter(e.touches);
-                
-                // スケール（ズーム）の計算
                 if (initialDistance > 0) {
                     scale = initialScale * (currentDistance / initialDistance);
-                    scale = Math.max(0.5, Math.min(scale, 5)); // 0.5倍〜5倍に制限
+                    scale = Math.max(0.5, Math.min(scale, 5)); 
                 }
-                
-                // パン（移動）の計算
                 translateX = initialTranslateX + (currentCenter.x - initialCenter.x);
                 translateY = initialTranslateY + (currentCenter.y - initialCenter.y);
-                
                 applyTransform();
             }
         }, { passive: false });
@@ -330,16 +286,8 @@
         canvasWrapper.addEventListener('touchend', (e) => { touchCount = e.touches.length; });
         canvasWrapper.addEventListener('touchcancel', (e) => { touchCount = e.touches.length; });
 
-        // ズーム・移動リセットボタン
-        document.getElementById('resetViewBtn').addEventListener('click', () => {
-            scale = 1; translateX = 0; translateY = 0; applyTransform();
-        });
+        document.getElementById('resetViewBtn').addEventListener('click', () => { scale = 1; translateX = 0; translateY = 0; applyTransform(); });
 
-        /* ----------------------------------------------------
-           ★ 描画（ペン・消しゴム）の処理 ★
-        ---------------------------------------------------- */
-        // CSS transform がかかっていても、getBoundingClientRect は正確な変形後のサイズを返すため、
-        // この計算式でズーム・移動後の正しいキャンバス内座標が取得できます。
         function getPos(event) {
             const rect = canvas.getBoundingClientRect();
             return {
@@ -349,39 +297,24 @@
         }
 
         function startDrawing(e) {
-            if (touchCount >= 2 || e.pointerType === 'touch' && touchCount >= 2) return; // 2本指以上の時は描かない
-            e.preventDefault();
-            isDrawing = true;
-            canvas.setPointerCapture(e.pointerId);
-            const pos = getPos(e);
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
+            if (touchCount >= 2 || e.pointerType === 'touch' && touchCount >= 2) return; 
+            e.preventDefault(); isDrawing = true; canvas.setPointerCapture(e.pointerId);
+            const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y);
         }
 
         function draw(e) {
             if (!isDrawing || touchCount >= 2) return;
-            e.preventDefault();
-            const pos = getPos(e);
+            e.preventDefault(); const pos = getPos(e);
             if (currentTool === 'pen') {
-                ctx.globalCompositeOperation = 'source-over';
-                // ズームしている時でもペンの太さが極端に変わらないように補正
-                ctx.lineWidth = 3 / scale; 
-                ctx.strokeStyle = currentColor;
+                ctx.globalCompositeOperation = 'source-over'; ctx.lineWidth = 3 / scale; ctx.strokeStyle = currentColor;
             } else {
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.lineWidth = 30 / scale; // 消しゴムも太さを補正
+                ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 30 / scale; 
             }
-            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineTo(pos.x, pos.y); ctx.stroke();
         }
 
         function stopDrawing(e) {
-            if (isDrawing) {
-                isDrawing = false;
-                canvas.releasePointerCapture(e.pointerId);
-                saveHistory();
-            }
+            if (isDrawing) { isDrawing = false; canvas.releasePointerCapture(e.pointerId); saveHistory(); }
         }
 
         canvas.addEventListener('pointerdown', startDrawing);
@@ -389,12 +322,7 @@
         canvas.addEventListener('pointerup', stopDrawing);
         canvas.addEventListener('pointercancel', stopDrawing);
 
-        /* ----------------------------------------------------
-           ツールメニューの動作
-        ---------------------------------------------------- */
-        const penBtn = document.getElementById('penBtn');
-        const eraserBtn = document.getElementById('eraserBtn');
-        
+        const penBtn = document.getElementById('penBtn'); const eraserBtn = document.getElementById('eraserBtn');
         function activatePen() { currentTool = 'pen'; penBtn.classList.add('active'); eraserBtn.classList.remove('active'); }
         penBtn.addEventListener('click', activatePen);
         eraserBtn.addEventListener('click', () => { currentTool = 'eraser'; eraserBtn.classList.add('active'); penBtn.classList.remove('active'); });
@@ -418,7 +346,6 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveHistory(); 
         });
 
-        // 写真アップロード
         document.getElementById('photoInput').addEventListener('change', function(e) {
             const file = e.target.files[0]; if (!file) return;
             const reader = new FileReader();
@@ -436,14 +363,12 @@
             reader.readAsDataURL(file); e.target.value = '';
         });
 
-        // 送信
         document.getElementById('sendBtn').addEventListener('click', () => {
             const name = document.getElementById('nameInput').value;
             if (!name) { alert("名前またはグループ名を入力してください！"); return; }
             const sendBtn = document.getElementById('sendBtn');
             sendBtn.textContent = "送信中..."; sendBtn.disabled = true;
             
-            // 背景（白）を確実に敷いてから画像化
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
             const tCtx = tempCanvas.getContext('2d');
@@ -457,13 +382,11 @@
             }).then(() => {
                 alert("先生に送信しました！");
                 ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveHistory();
-                sendBtn.textContent = "🚀 先生に送信"; sendBtn.disabled = false;
-            }).catch((error) => { alert("エラーが発生しました: " + error); sendBtn.textContent = "🚀 先生に送信"; sendBtn.disabled = false; });
+                sendBtn.innerHTML = "<span>🚀</span><span>送信</span>"; sendBtn.disabled = false;
+            }).catch((error) => { alert("エラーが発生しました: " + error); sendBtn.innerHTML = "<span>🚀</span><span>送信</span>"; sendBtn.disabled = false; });
         });
 
-        /* ----------------------------------------------------
-           ギャラリー（閲覧画面）の処理
-        ---------------------------------------------------- */
+        /* --- ギャラリー（閲覧画面）の処理 --- */
         const gallery = document.getElementById('gallery');
         const modal = document.getElementById('modal');
 
