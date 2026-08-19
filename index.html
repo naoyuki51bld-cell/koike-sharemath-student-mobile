@@ -6,30 +6,51 @@
     <title>生徒用スマホ版：手書き＆みんなの意見</title>
     <style>
         /* -------------------------------------
-           全体レイアウト（スマホ横画面用）
+           全体レイアウト（スマホ専用）
         ------------------------------------- */
-        body { 
+        body, html { 
             margin: 0; padding: 0; 
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif; 
-            display: flex; flex-direction: row; 
-            height: 100vh; width: 100vw;
-            background: #2c3e50; 
-            overflow: hidden;
+            width: 100vw; height: 100vh;
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background: #ecf0f1; 
+            overflow: hidden; /* 画面全体のスクロールを完全に禁止 */
             touch-action: none; 
+            position: fixed; /* iOSでのバウンススクロール防止 */
         }
 
         /* -------------------------------------
-           左側：ツールメニュー（限界までスリム化）
+           左側：収納可能なツールメニュー
         ------------------------------------- */
         .sidebar {
-            width: 95px; min-width: 95px; /* ★幅を大幅に狭くしました */
+            position: absolute;
+            top: 0; left: 0;
+            height: 100%;
+            width: 95px; 
             background: rgba(255, 255, 255, 0.95);
-            border-right: 1px solid #ddd;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.15);
             display: flex; flex-direction: column;
-            padding: 8px 5px; gap: 6px;
-            overflow-y: auto; 
+            padding: 8px 5px; gap: 6px; box-sizing: border-box;
             z-index: 20;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* なめらかなスライド */
+        }
+        /* メニューを隠す時のクラス */
+        .sidebar.closed {
+            transform: translateX(-100%);
+        }
+
+        /* 収納・展開用のつまみ（ハンドル） */
+        .toggle-handle {
+            position: absolute;
+            right: -30px; /* メニューの外側に飛び出させる */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px; height: 60px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 0 10px 10px 0;
+            box-shadow: 3px 0 5px rgba(0,0,0,0.1);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 16px; font-weight: bold; color: #555; cursor: pointer;
+            border: 1px solid #ddd; border-left: none;
         }
 
         .name-input { 
@@ -70,40 +91,52 @@
         .switch-btn { background-color: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; display: none; }
 
         /* -------------------------------------
-           右側：メイン描画＆ギャラリーエリア
+           メインキャンバスエリア（画面100%使う）
         ------------------------------------- */
-        .main-area { flex: 1; position: relative; overflow: hidden; }
-        .section { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-
-        #drawSection {
+        .main-area { 
+            position: absolute; top: 0; left: 0;
+            width: 100vw; height: 100vh;
             background-image: radial-gradient(#ccc 1px, transparent 1px);
             background-size: 20px 20px; 
             background-color: #ecf0f1;
-            display: flex; align-items: center; justify-content: center;
+            z-index: 10; /* メニューの下に敷く */
         }
         
         canvas { 
-            background-color: white; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            touch-action: none; cursor: crosshair; 
-            transform-origin: 0 0;
+            width: 100%; height: 100%; 
+            touch-action: none; cursor: crosshair; display: block;
         }
 
-        .zoom-indicator {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.5); color: white;
-            padding: 5px 10px; border-radius: 15px; font-size: 12px;
-            pointer-events: none; z-index: 10;
+        /* -------------------------------------
+           ギャラリー画面（完全な全画面表示）
+        ------------------------------------- */
+        #gallerySection { 
+            display: none; 
+            position: fixed; top: 0; left: 0; 
+            width: 100vw; height: 100vh;
+            padding: 15px; box-sizing: border-box; overflow-y: auto; 
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); 
+            z-index: 30; /* 全ての一番上に表示 */
         }
-
-        #gallerySection { display: none; padding: 15px; overflow-y: auto; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); }
-        .gallery-header { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.9); padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        
+        .gallery-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(255, 255, 255, 0.95); padding: 10px 15px; 
+            border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; 
+            position: sticky; top: 0; z-index: 31;
+        }
         .gallery-header h2 { margin: 0; font-size: 16px; color: #333; }
+        #backToDrawBtn {
+            background-color: #fff; color: #333; border: 1px solid #ccc;
+            padding: 6px 12px; border-radius: 20px; font-weight: bold; cursor: pointer;
+        }
+        
         #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
         .student-card { border-radius: 8px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: white; }
         .student-card img { width: 100%; border-radius: 6px; cursor: pointer; border: 1px solid #eee; }
         .card-info { margin-top: 8px; text-align: center; font-weight: bold; font-size: 14px; color: #444; }
         
+        /* 拡大モーダル */
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; flex-direction: column; z-index: 100; }
         #modal img { max-width: 95%; max-height: 80%; background: white; border-radius: 8px; }
         #modal .modal-name { color: white; font-size: 20px; font-weight: bold; margin-top: 15px; }
@@ -114,7 +147,9 @@
 </head>
 <body>
 
-    <div class="sidebar">
+    <div id="sidebar" class="sidebar">
+        <div id="toggleHandle" class="toggle-handle">◀</div>
+
         <input type="text" id="nameInput" class="name-input" placeholder="名前">
         
         <div class="color-palette">
@@ -130,7 +165,6 @@
         
         <button id="undoBtn" class="btn"><span>↩️</span><span>戻る</span></button>
         <button id="clearBtn" class="btn" style="color: #c62828;"><span>🗑</span><span>全消去</span></button>
-        <button id="resetViewBtn" class="btn" style="color: #2e7d32;"><span>🔍</span><span>ズーム戻す</span></button>
 
         <label for="photoInput" class="photo-label"><span>📷</span><span>写真</span></label>
         <input type="file" id="photoInput" accept="image/*">
@@ -141,21 +175,17 @@
         <button id="goToGalleryBtn" class="btn switch-btn"><span>👀</span><span>みんなの</span></button>
     </div>
 
-    <div class="main-area">
-        <div id="drawSection" class="section">
-            <div id="zoomIndicator" class="zoom-indicator">100%</div>
-            <div id="canvasWrapper" style="width: 100%; height: 100%; position: relative;">
-                <canvas id="myCanvas"></canvas>
-            </div>
-        </div>
-        <div id="gallerySection" class="section">
-            <div class="gallery-header">
-                <button id="backToDrawBtn" class="btn switch-btn" style="display:block; width:auto; flex-direction: row; padding: 8px;">⬅️ 戻る</button>
-                <h2>みんなの意見</h2>
-            </div>
-            <div id="loadingMsg" class="loading">読込中...</div>
-            <div id="gallery"></div>
-        </div>
+    <div class="main-area" id="mainArea">
+        <canvas id="myCanvas"></canvas>
+    </div>
+
+    <div id="gallerySection">
+        <div class="gallery-header">
+            <button id="backToDrawBtn">⬅️ 戻る</button>
+            <h2>みんなの意見</h2>
+            <div style="width: 60px;"></div> </div>
+        <div id="loadingMsg" class="loading">読込中...</div>
+        <div id="gallery"></div>
     </div>
 
     <div id="modal">
@@ -168,6 +198,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
+        // ==========================================
+        // Firebase 設定コード
+        // ==========================================
         const firebaseConfig = {
           apiKey: "AIzaSyCVSbYgwZ1GX9Y5xcgXHII7kuz-MuxeWfY",
           authDomain: "share-math1.firebaseapp.com",
@@ -180,7 +213,25 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        const drawSection = document.getElementById('drawSection');
+        /* ----------------------------------------------------
+           メニューの収納・展開の処理
+        ---------------------------------------------------- */
+        const sidebar = document.getElementById('sidebar');
+        const toggleHandle = document.getElementById('toggleHandle');
+        
+        toggleHandle.addEventListener('click', () => {
+            sidebar.classList.toggle('closed');
+            // クラスが付いている（隠れている）時は右向きの矢印に
+            if (sidebar.classList.contains('closed')) {
+                toggleHandle.textContent = '▶';
+            } else {
+                toggleHandle.textContent = '◀';
+            }
+        });
+
+        /* ----------------------------------------------------
+           画面切り替え＆先生の閲覧許可コントロール
+        ---------------------------------------------------- */
         const gallerySection = document.getElementById('gallerySection');
         const goToGalleryBtn = document.getElementById('goToGalleryBtn');
 
@@ -192,38 +243,36 @@
                     goToGalleryBtn.style.display = 'none';
                     if (gallerySection.style.display === 'block') {
                         gallerySection.style.display = 'none';
-                        drawSection.style.display = 'flex';
                         alert("先生が閲覧を一時停止しました。");
                     }
                 }
             }
         });
 
-        goToGalleryBtn.addEventListener('click', () => { drawSection.style.display = 'none'; gallerySection.style.display = 'block'; });
-        document.getElementById('backToDrawBtn').addEventListener('click', () => { gallerySection.style.display = 'none'; drawSection.style.display = 'flex'; });
+        goToGalleryBtn.addEventListener('click', () => { gallerySection.style.display = 'block'; });
+        document.getElementById('backToDrawBtn').addEventListener('click', () => { gallerySection.style.display = 'none'; });
 
+        /* ----------------------------------------------------
+           キャンバスの基本設定とリサイズ
+        ---------------------------------------------------- */
         const canvas = document.getElementById('myCanvas');
-        const canvasWrapper = document.getElementById('canvasWrapper');
+        const mainArea = document.getElementById('mainArea');
         const ctx = canvas.getContext('2d');
-        const zoomIndicator = document.getElementById('zoomIndicator');
         
         let isDrawing = false;
         let currentTool = 'pen';
         let currentColor = '#333';
         let history = [];
 
-        // ★修正点：画面の向きが変わった時などにキャンバスを画面いっぱいにリサイズする
         function resizeCanvas() {
-            // 現在の絵をバックアップ
             const tempImg = canvas.toDataURL();
             
-            // キャンバスサイズを親要素（余白を引いた右側の広さ）にぴったり合わせる
-            canvas.width = canvasWrapper.clientWidth;
-            canvas.height = canvasWrapper.clientHeight;
+            // キャンバスサイズを画面全体（100vw, 100vh）にぴったり合わせる
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // バックアップした絵を戻す
             if (history.length > 0) {
                 const img = new Image();
                 img.src = tempImg;
@@ -231,63 +280,16 @@
             } else {
                 saveHistory();
             }
-            
-            // ズームや移動の位置もリセットする
-            translateX = 0; translateY = 0; scale = 1;
-            applyTransform();
         }
 
-        // ページ読み込み時と、スマホの縦横が変わった時にリサイズを実行する
         window.addEventListener('load', resizeCanvas);
-        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas); // 縦横変更時に自動リサイズ
 
         function saveHistory() { history.push(canvas.toDataURL()); }
 
-        let scale = 1; let translateX = 0; let translateY = 0;
-        let touchCount = 0; 
-        let initialDistance = 0; let initialScale = 1;
-        let initialCenter = { x: 0, y: 0 }; let initialTranslateX = 0; let initialTranslateY = 0;
-
-        function applyTransform() {
-            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-            zoomIndicator.textContent = Math.round(scale * 100) + '%';
-        }
-
-        function getDistance(touches) { return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY); }
-        function getCenter(touches) { return { x: (touches[0].clientX + touches[1].clientX) / 2, y: (touches[0].clientY + touches[1].clientY) / 2 }; }
-
-        canvasWrapper.addEventListener('touchstart', (e) => {
-            touchCount = e.touches.length;
-            if (touchCount >= 2) {
-                isDrawing = false; 
-                initialDistance = getDistance(e.touches);
-                initialScale = scale;
-                initialCenter = getCenter(e.touches);
-                initialTranslateX = translateX; initialTranslateY = translateY;
-            }
-        }, { passive: false });
-
-        canvasWrapper.addEventListener('touchmove', (e) => {
-            touchCount = e.touches.length;
-            if (touchCount >= 2) {
-                e.preventDefault(); 
-                const currentDistance = getDistance(e.touches);
-                const currentCenter = getCenter(e.touches);
-                if (initialDistance > 0) {
-                    scale = initialScale * (currentDistance / initialDistance);
-                    scale = Math.max(0.5, Math.min(scale, 5)); 
-                }
-                translateX = initialTranslateX + (currentCenter.x - initialCenter.x);
-                translateY = initialTranslateY + (currentCenter.y - initialCenter.y);
-                applyTransform();
-            }
-        }, { passive: false });
-
-        canvasWrapper.addEventListener('touchend', (e) => { touchCount = e.touches.length; });
-        canvasWrapper.addEventListener('touchcancel', (e) => { touchCount = e.touches.length; });
-
-        document.getElementById('resetViewBtn').addEventListener('click', () => { scale = 1; translateX = 0; translateY = 0; applyTransform(); });
-
+        /* ----------------------------------------------------
+           ★ ズームなしのシンプルで確実な描画処理 ★
+        ---------------------------------------------------- */
         function getPos(event) {
             const rect = canvas.getBoundingClientRect();
             return {
@@ -297,24 +299,38 @@
         }
 
         function startDrawing(e) {
-            if (touchCount >= 2 || e.pointerType === 'touch' && touchCount >= 2) return; 
-            e.preventDefault(); isDrawing = true; canvas.setPointerCapture(e.pointerId);
-            const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y);
+            e.preventDefault(); 
+            isDrawing = true; 
+            canvas.setPointerCapture(e.pointerId);
+            const pos = getPos(e); 
+            ctx.beginPath(); 
+            ctx.moveTo(pos.x, pos.y);
         }
 
         function draw(e) {
-            if (!isDrawing || touchCount >= 2) return;
-            e.preventDefault(); const pos = getPos(e);
+            if (!isDrawing) return;
+            e.preventDefault(); 
+            const pos = getPos(e);
             if (currentTool === 'pen') {
-                ctx.globalCompositeOperation = 'source-over'; ctx.lineWidth = 3 / scale; ctx.strokeStyle = currentColor;
+                ctx.globalCompositeOperation = 'source-over'; 
+                ctx.lineWidth = 3; 
+                ctx.strokeStyle = currentColor;
             } else {
-                ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 30 / scale; 
+                ctx.globalCompositeOperation = 'destination-out'; 
+                ctx.lineWidth = 30; 
             }
-            ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineTo(pos.x, pos.y); ctx.stroke();
+            ctx.lineCap = 'round'; 
+            ctx.lineJoin = 'round'; 
+            ctx.lineTo(pos.x, pos.y); 
+            ctx.stroke();
         }
 
         function stopDrawing(e) {
-            if (isDrawing) { isDrawing = false; canvas.releasePointerCapture(e.pointerId); saveHistory(); }
+            if (isDrawing) { 
+                isDrawing = false; 
+                canvas.releasePointerCapture(e.pointerId); 
+                saveHistory(); 
+            }
         }
 
         canvas.addEventListener('pointerdown', startDrawing);
@@ -322,6 +338,9 @@
         canvas.addEventListener('pointerup', stopDrawing);
         canvas.addEventListener('pointercancel', stopDrawing);
 
+        /* ----------------------------------------------------
+           ツールメニューの動作
+        ---------------------------------------------------- */
         const penBtn = document.getElementById('penBtn'); const eraserBtn = document.getElementById('eraserBtn');
         function activatePen() { currentTool = 'pen'; penBtn.classList.add('active'); eraserBtn.classList.remove('active'); }
         penBtn.addEventListener('click', activatePen);
@@ -365,7 +384,7 @@
 
         document.getElementById('sendBtn').addEventListener('click', () => {
             const name = document.getElementById('nameInput').value;
-            if (!name) { alert("名前またはグループ名を入力してください！"); return; }
+            if (!name) { alert("名前を入力してください！"); return; }
             const sendBtn = document.getElementById('sendBtn');
             sendBtn.textContent = "送信中..."; sendBtn.disabled = true;
             
@@ -383,10 +402,12 @@
                 alert("先生に送信しました！");
                 ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveHistory();
                 sendBtn.innerHTML = "<span>🚀</span><span>送信</span>"; sendBtn.disabled = false;
-            }).catch((error) => { alert("エラーが発生しました: " + error); sendBtn.innerHTML = "<span>🚀</span><span>送信</span>"; sendBtn.disabled = false; });
+            }).catch((error) => { alert("エラーが発生: " + error); sendBtn.innerHTML = "<span>🚀</span><span>送信</span>"; sendBtn.disabled = false; });
         });
 
-        /* --- ギャラリー（閲覧画面）の処理 --- */
+        /* ----------------------------------------------------
+           ギャラリー（閲覧画面）の処理
+        ---------------------------------------------------- */
         const gallery = document.getElementById('gallery');
         const modal = document.getElementById('modal');
 
