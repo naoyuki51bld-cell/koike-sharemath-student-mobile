@@ -11,14 +11,11 @@
             background: #ecf0f1; overflow: hidden; touch-action: none; position: fixed; 
         }
 
-        /* -------------------------------------
-           右側：収納可能なツールメニューに変更
-        ------------------------------------- */
         .sidebar {
-            position: absolute; top: 0; right: 0; /* 画面右側に配置 */
+            position: absolute; top: 0; right: 0; 
             height: 100%; width: 95px; 
             background: rgba(255, 255, 255, 0.95);
-            box-shadow: -2px 0 10px rgba(0,0,0,0.15); /* 影の向きを左側に */
+            box-shadow: -2px 0 10px rgba(0,0,0,0.15); 
             display: flex; flex-direction: column;
             padding: 8px 5px 20px 5px; gap: 6px; box-sizing: border-box;
             z-index: 20; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch;
@@ -27,14 +24,13 @@
         .sidebar::-webkit-scrollbar { width: 4px; }
         .sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
 
-        /* 右に隠す */
         .sidebar.closed { transform: translateX(100%); }
 
         .toggle-handle {
             position: fixed; right: 95px; top: 50%; transform: translateY(-50%);
             width: 30px; height: 60px;
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px 0 0 10px; /* 左側を丸くする */
+            border-radius: 10px 0 0 10px; 
             box-shadow: -3px 0 5px rgba(0,0,0,0.1);
             display: flex; justify-content: center; align-items: center;
             font-size: 16px; font-weight: bold; color: #555; cursor: pointer;
@@ -57,17 +53,11 @@
         .send-btn { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; margin-top: 3px; flex-shrink: 0; }
         .switch-btn { background-color: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; display: none; flex-shrink: 0; }
 
-        /* -------------------------------------
-           メインキャンバスエリア
-        ------------------------------------- */
         .main-area { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-image: radial-gradient(#ccc 1px, transparent 1px); background-size: 20px 20px; background-color: #ecf0f1; z-index: 10; overflow: hidden; }
         #canvasWrapper { width: 100%; height: 100%; position: relative; }
         canvas { background-color: transparent; width: 100%; height: 100%; touch-action: none; cursor: crosshair; display: block; transform-origin: 0 0; }
-        .zoom-indicator { position: absolute; top: 10px; left: 10px; /* 右側メニューを避けるため左上に */ background: rgba(0,0,0,0.5); color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; pointer-events: none; z-index: 15; }
+        .zoom-indicator { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5); color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; pointer-events: none; z-index: 15; }
 
-        /* -------------------------------------
-           ギャラリー画面＆拡大モーダル
-        ------------------------------------- */
         #gallerySection { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; padding: 15px; box-sizing: border-box; overflow-y: auto; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); z-index: 30; }
         .gallery-header { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.95); padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; position: sticky; top: 0; z-index: 31; }
         .gallery-header h2 { margin: 0; font-size: 16px; color: #333; }
@@ -147,7 +137,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        /* --- メニュー開閉 --- */
         const sidebar = document.getElementById('sidebar');
         const toggleHandle = document.getElementById('toggleHandle');
         toggleHandle.addEventListener('click', () => {
@@ -155,7 +144,6 @@
             toggleHandle.textContent = sidebar.classList.contains('closed') ? '◀' : '▶';
         });
 
-        /* --- ギャラリー表示コントロール --- */
         const gallerySection = document.getElementById('gallerySection');
         const goToGalleryBtn = document.getElementById('goToGalleryBtn');
 
@@ -175,7 +163,6 @@
         goToGalleryBtn.addEventListener('click', () => { gallerySection.style.display = 'block'; });
         document.getElementById('backToDrawBtn').addEventListener('click', () => { gallerySection.style.display = 'none'; });
 
-        /* --- キャンバス設定 --- */
         const canvas = document.getElementById('myCanvas');
         const canvasWrapper = document.getElementById('canvasWrapper');
         const ctx = canvas.getContext('2d');
@@ -183,9 +170,9 @@
         let isDrawing = false, currentTool = 'pen', currentColor = '#333', history = [];
 
         function resizeCanvas() {
-            const tempImg = canvas.toDataURL();
+            const tempImg = canvas.toDataURL(); // PNG形式で保存
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // 透明のままリセット
             if (history.length > 0) {
                 const img = new Image(); img.src = tempImg;
                 img.onload = () => { ctx.drawImage(img, 0, 0); };
@@ -195,7 +182,6 @@
         window.addEventListener('resize', resizeCanvas); 
         function saveHistory() { history.push(canvas.toDataURL()); }
 
-        /* --- キャンバスのズーム＆パン --- */
         let scale = 1, translateX = 0, translateY = 0, touchCount = 0; 
         let initialDistance = 0, initialScale = 1, initialCenter = { x: 0, y: 0 }, initialTranslateX = 0, initialTranslateY = 0;
 
@@ -228,7 +214,6 @@
         canvasWrapper.addEventListener('touchcancel', (e) => { touchCount = e.touches.length; });
         document.getElementById('resetViewBtn').addEventListener('click', () => { scale = 1; translateX = 0; translateY = 0; applyTransform(); });
 
-        /* --- 描画処理 --- */
         function getPos(event) {
             const rect = canvas.getBoundingClientRect();
             return { x: (event.clientX - rect.left) * (canvas.width / rect.width), y: (event.clientY - rect.top) * (canvas.height / rect.height) };
@@ -241,16 +226,18 @@
         function draw(e) {
             if (!isDrawing || touchCount >= 2) return;
             e.preventDefault(); const pos = getPos(e);
-            ctx.globalCompositeOperation = 'source-over'; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; 
-            if (currentTool === 'pen') { ctx.lineWidth = 3 / scale; ctx.strokeStyle = currentColor; } 
-            else { ctx.lineWidth = 30 / scale; ctx.strokeStyle = '#ffffff'; }
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round'; 
+            if (currentTool === 'pen') { 
+                ctx.globalCompositeOperation = 'source-over'; ctx.lineWidth = 3 / scale; ctx.strokeStyle = currentColor; 
+            } else { 
+                ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 30 / scale; 
+            }
             ctx.lineTo(pos.x, pos.y); ctx.stroke();
         }
         function stopDrawing(e) { if (isDrawing) { isDrawing = false; canvas.releasePointerCapture(e.pointerId); saveHistory(); } }
 
         canvas.addEventListener('pointerdown', startDrawing); canvas.addEventListener('pointermove', draw); canvas.addEventListener('pointerup', stopDrawing); canvas.addEventListener('pointercancel', stopDrawing);
 
-        /* --- ツールメニュー --- */
         const penBtn = document.getElementById('penBtn'); const eraserBtn = document.getElementById('eraserBtn');
         function activatePen() { currentTool = 'pen'; penBtn.classList.add('active'); eraserBtn.classList.remove('active'); }
         penBtn.addEventListener('click', activatePen);
@@ -263,7 +250,7 @@
         document.getElementById('undoBtn').addEventListener('click', () => {
             if (history.length > 1) { history.pop(); const previousState = history[history.length - 1]; const img = new Image(); img.src = previousState; img.onload = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(img, 0, 0); }; }
         });
-        document.getElementById('clearBtn').addEventListener('click', () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveHistory(); });
+        document.getElementById('clearBtn').addEventListener('click', () => { ctx.clearRect(0, 0, canvas.width, canvas.height); saveHistory(); });
 
         document.getElementById('photoInput').addEventListener('change', function(e) {
             const file = e.target.files[0]; if (!file) return;
@@ -272,7 +259,8 @@
                 const img = new Image();
                 img.onload = function() {
                     ctx.globalCompositeOperation = 'source-over';
-                    const s = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.9;
+                    // 画面に合わせて最大サイズで配置
+                    const s = Math.min(canvas.width / img.width, canvas.height / img.height);
                     const newWidth = img.width * s; const newHeight = img.height * s;
                     const x = (canvas.width - newWidth) / 2; const y = (canvas.height - newHeight) / 2;
                     ctx.drawImage(img, x, y, newWidth, newHeight); saveHistory();
@@ -286,17 +274,18 @@
             const name = document.getElementById('nameInput').value;
             if (!name) { alert("名前を入力してください！"); return; }
             const sendBtn = document.getElementById('sendBtn'); sendBtn.textContent = "送信中..."; sendBtn.disabled = true;
-            const tempCanvas = document.createElement('canvas'); tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
-            const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#ffffff'; tCtx.fillRect(0, 0, canvas.width, canvas.height); tCtx.drawImage(canvas, 0, 0);
+            
+            // 背景透過（PNG形式）のまま送信する
+            const imageData = canvas.toDataURL('image/png');
+            
             db.collection("submissions").add({
-                name: name, image: tempCanvas.toDataURL('image/jpeg', 0.8), color: "#ffffff", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                name: name, image: imageData, color: "#ffffff", timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                alert("先生に送信しました！"); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveHistory();
+                alert("先生に送信しました！"); ctx.clearRect(0, 0, canvas.width, canvas.height); saveHistory();
                 sendBtn.innerHTML = "<span>🚀</span><span>送信</span>"; sendBtn.disabled = false;
             }).catch((error) => { alert("エラーが発生: " + error); sendBtn.innerHTML = "<span>🚀</span><span>送信</span>"; sendBtn.disabled = false; });
         });
 
-        /* --- ギャラリー＆★モーダルのズーム対応 --- */
         const gallery = document.getElementById('gallery');
         const modal = document.getElementById('modal');
         const modalImg = document.getElementById('modalImg');
@@ -324,16 +313,13 @@
             renderGallery(submissionsData); 
         });
 
-        // ★モーダルの背景タップで閉じる＆ズームリセット
         function closeModalFunc() {
             modal.style.display = 'none'; modalScale = 1; modalTx = 0; modalTy = 0; applyModalTransform();
         }
         modal.addEventListener('click', (e) => {
-            // 画像以外の黒い背景部分をタップしたら閉じる
             if (e.target === modal || e.target.id === 'closeModal' || e.target.id === 'modalName') { closeModalFunc(); }
         });
 
-        // ★他の人の意見（モーダル）の2本指ズーム
         let modalScale = 1, modalTx = 0, modalTy = 0;
         let mInitialDist = 0, mInitialScale = 1, mCenter = {x:0, y:0}, mInitTx = 0, mInitTy = 0;
 
@@ -349,7 +335,7 @@
         }, {passive: false});
 
         modal.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // スクロール防止
+            e.preventDefault(); 
             if (e.touches.length >= 2) {
                 const dist = getDistance(e.touches); const center = getCenter(e.touches);
                 if (mInitialDist > 0) { modalScale = Math.max(1, Math.min(mInitialScale * (dist / mInitialDist), 5)); }
